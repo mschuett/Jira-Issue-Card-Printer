@@ -6,7 +6,7 @@
   // YouTrack: http://qoomon.myjetbrains.com/youtrack/dashboard
 
   var global = {};
-  global.version = "4.3.3";
+  global.version = "4.3.3-ms-dev";
   global.issueTrackingUrl = "https://github.com/qoomon/Jira-Issue-Card-Printer";
   global.isDev = document.currentScript == null;
   global.isProd = !global.isDev;
@@ -165,12 +165,12 @@
 
   function loadSettings(){
     var settings = global.settings = global.settings || {};
-    settings.scale = parseFloat(readCookie("card_printer_scale")) || 1.0;
-    settings.rowCount = parseInt(readCookie("card_printer_row_count2")) || 2;
-    settings.colCount = parseInt(readCookie("card_printer_column_count")) || 1;
+    settings.scale = parseFloat(readCookie("card_printer_scale")) || 0.0;
+    settings.rowCount = parseInt(readCookie("card_printer_row_count2")) || 1;
+    settings.colCount = parseInt(readCookie("card_printer_column_count")) || 2;
 
     settings.singleCardPage = parseBool(readCookie("card_printer_single_card_page"), true );
-    settings.hideDescription = parseBool(readCookie("card_printer_hide_description"), false);
+    settings.hideDescription = parseBool(readCookie("card_printer_hide_description"), true);
     settings.hideAssignee = parseBool(readCookie("card_printer_hide_assignee"), false);
     settings.hideDueDate = parseBool(readCookie("card_printer_hide_due_date"), false);
   }
@@ -267,6 +267,13 @@
       }
     } else {
       card.find(".issue-assignee").addClass("hidden");
+    }
+
+    //Reporter
+    if (data.reporter) {
+      card.find(".issue-reporter").text("Erstellt am " + data.created + " von " + data.reporter);
+    } else {
+      card.find(".issue-reporter").addClass("hidden");
     }
 
     //Due-Date
@@ -571,6 +578,42 @@
   function cardElement(issueKey) {
     var result = jQuery('<div/>').html(global.cardHtml).contents()
       .attr("id", issueKey)
+      .addClass("card")
+      .html(multilineString(function() {
+/*!
+<div class="card-content">
+    <div class="card-body shadow">
+        <div class="issue-summary"></div>
+        <div class="issue-reporter"></div>
+        <div class="issue-it-dates"><table>
+          <tr><td>Ticket-Start:</td><td></td><td>Freigabe-Start:</td><td></td></tr>
+          <tr><td>Ticket-Ende:</td><td></td><td>Freigabe-Ende:</td><td></td></tr>
+        </table></div>
+        <div class="issue-description"></div>
+    </div>
+    <div class="card-header">
+        <div class="issue-id badge"></div>
+        <div class="issue-icon badge" type="story"></div>
+        <div class="issue-estimate badge"></div>
+        <div class="issue-due-box">
+            <div class="issue-due-date badge"></div>
+            <div class="issue-due-icon badge"></div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="issue-qr-code badge"></div>
+        <div class="issue-attachment badge"></div>
+        <div class="issue-assignee badge"></div>
+        <div class="issue-epic-box badge">
+            <span class="issue-epic-id"></span>
+            <span class="issue-epic-name"></span>
+        </div>
+    </div>
+</div>
+<div class="author">© qoomon.com Bengt Brodersen</div>
+*/
+      }));
+
     return result;
   }
 
@@ -786,6 +829,11 @@
           if (avatarUrl.indexOf("ownerId=") >= 0) {
             issueData.avatarUrl = avatarUrl;
           }
+        }
+
+        if (data.fields.reporter && data.fields.created) {
+          issueData.reporter = data.fields.reporter.displayName;
+          issueData.created  = formatDate(new Date(data.fields.created));
         }
 
         if (data.fields.duedate) {

@@ -136,6 +136,20 @@ body {
 .issue-description p:last-of-type {
   margin-bottom: 0rem;
 }
+.issue-it-dates {
+  padding: 0.2rem;
+  margin-top: 0.1rem;
+}
+.issue-it-dates table td {
+  padding: 0.05rem;
+  width: 20%;
+  font-size: normal;
+}
+.issue-reporter {
+  display: block;
+  font-size: 0.6rem;
+  line-height: 0.62rem;
+}
 .issue-id {
   position: absolute;
   left: 1rem;
